@@ -1,0 +1,33 @@
+{% extends 'core/base.html' %}
+
+{% block title %}Log in{% endblock %}
+
+{% block content %}
+<form method="POST" action=".">
+    {% csrf_token %}
+
+    <div>
+        <p>Your username:</p>
+        <input type="text" name="username" placeholder="Your username...">
+    </div>
+    <div>
+        <p>Your password:</p>
+        <input type="password" name="password" placeholder="Your password...">
+    </div>
+
+    {% if form.errors or form.non_field_errors %}
+        {% for field in form %}
+            {% for error in field.errors %}
+                <p>{{ error|escape }}</p>
+            {% endfor %}
+        {% endfor %}
+
+        {{ form.non_field_errors }}
+    {% endif %}
+
+    <br/>
+    <button class="btn btn-success">Log in</button>
+</form>
+
+
+{% endblock %}
