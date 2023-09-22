@@ -65,6 +65,13 @@ TEMPLATES = [
 WSGI_APPLICATION = 'djangowebchat.wsgi.application'
 ASGI_APPLICATION = 'djangowebchat.asgi.application'
 
+CHANNEL_LAYERS = {
+    'default': 'channel_redis.core.RedisChannelLayer',
+    'BACKEND': {
+        'host': [('localhost', 6379)]
+    }
+}
+
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 
