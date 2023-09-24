@@ -5,18 +5,21 @@
 {% block content %}
 <h1>{{ room.name }}</h1>
 
-<div>
-    <h3>{{ request.user.username }}</h3>
-    <p>DLJKf dlksjf sldjkf lskdjf flejf fdslkjf.</p>
+<div id="chat-messages">
+    <div>
+        <h3>{{ request.user.username }}</h3>
+        <p>DLJKf dlksjf sldjkf lskdjf flejf fdslkjf.</p>
+    </div>
+    <div>
+        <h3>{{ request.user.username }}</h3>
+        <p>DLJKf dlksjf sldjkf lskdjf flejf fdslkjf.</p>
+    </div>
+    <div>
+        <h3>{{ request.user.username }}</h3>
+        <p>DLJKf dlksjf sldjkf lskdjf flejf fdslkjf.</p>
+    </div>
 </div>
-<div>
-    <h3>{{ request.user.username }}</h3>
-    <p>DLJKf dlksjf sldjkf lskdjf flejf fdslkjf.</p>
-</div>
-<div>
-    <h3>{{ request.user.username }}</h3>
-    <p>DLJKf dlksjf sldjkf lskdjf flejf fdslkjf.</p>
-</div>
+
 
 <div>
     <form method="POST" action=".">
@@ -29,8 +32,12 @@
 
 {% block script %}
 {{ room.slug|json_script:"json-roomname" }}
+{{ request.user.username|json_script:"json-username" }}
+
 <script>
     const roomName = JSON.parse(document.getElementById('json-roomname').textContent);
+    const userName = JSON.parse(document.getElementById('json-username').textContent);
+    
     const chatSocket = new WebSocket(
         'ws://'
         + window.location.host
@@ -41,10 +48,35 @@
 
     chatSocket.onmessage = function(e) {
         console.log('onmessage')
+
+        const data = JSON.parse(e.data);
+
+        if (data.message) {
+            let html = '<div>'
+                html += '<h3>' + data.username + '</h3>'
+                html += '<p>' + data.message + '</p></div>';
+
+                document.querySelector('#chat-messages').innerHTML += html;
+        } else {
+            alert('The message was empty!');
+        }
     }
 
     chatSocket.onclose = function(e) {
         console.log('onclose')
+    }
+
+    document.querySelector('#chat-message-submit').onclick = function(e) {
+        const messageInputDom = document.querySelector('#chat-message-input');
+        const message = messageInputDom.value;
+
+        chatSocket.send(JSON.stringify({
+            'message': message,
+            'username': userName,
+            'room': roomName
+        }))
+
+        messageInputDom.value = '';
     }
 </script>
 {% endblock %}
