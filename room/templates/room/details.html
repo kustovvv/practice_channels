@@ -6,18 +6,12 @@
 <h1>{{ room.name }}</h1>
 
 <div id="chat-messages">
-    <div>
-        <h3>{{ request.user.username }}</h3>
-        <p>DLJKf dlksjf sldjkf lskdjf flejf fdslkjf.</p>
-    </div>
-    <div>
-        <h3>{{ request.user.username }}</h3>
-        <p>DLJKf dlksjf sldjkf lskdjf flejf fdslkjf.</p>
-    </div>
-    <div>
-        <h3>{{ request.user.username }}</h3>
-        <p>DLJKf dlksjf sldjkf lskdjf flejf fdslkjf.</p>
-    </div>
+    {% for message in messages %}
+        <div>
+            <h3>{{ message.user.username }}</h3>
+            <p>{{ message.content }}</p>
+        </div>
+    {% endfor %}
 </div>
 
 <div>
@@ -27,4 +21,60 @@
         <button class="btn btn-success" id="chat-message-submit">Submit</button>    
     </form>    
 </div>
+{% endblock %}
+
+{% block scripts %}
+{{ room.slug|json_script:"json-roomname" }}
+{{ request.user.username|json_script:"json-username" }}
+
+<script>
+    const roomName = JSON.parse(document.getElementById('json-roomname').textContent);
+    const userName = JSON.parse(document.getElementById('json-username').textContent);
+
+    const chatSocket = new WebSocket(
+        'ws://'
+        + window.location.host
+        + '/ws/'
+        + roomName
+        + '/'
+    );
+
+    chatSocket.onmessage = function(e) {
+        console.log('onmessage')
+
+        const data = JSON.parse(e.data);
+
+        if (data.message) {
+            let html = '<div>';
+                html += '<p>' + data.username + '</p>';
+                html += '<p>' + data.message + '</p>';
+
+            document.querySelector('#chat-messages').innerHTML += html;
+
+        } else {
+            alert('The message was empty!')
+        }
+    }
+
+    chatSocket.onclose = function(e) {
+        console.log('onclose')
+    }
+
+    document.querySelector('#chat-message-submit').onclick = function(e) {
+        e.preventDefault();
+
+        const messageInputDom = document.querySelector('#chat-message-input');
+        const message = messageInputDom.value;
+
+        chatSocket.send(JSON.stringify({
+            'message': message,
+            'username': userName,
+            'room': roomName
+        }))
+
+        messageInputDom.value = '';
+
+        return false;
+    }
+</script>
 {% endblock %}

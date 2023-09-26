@@ -1,6 +1,6 @@
 from django.shortcuts import render
 
-from .models import Rooms
+from .models import Rooms, Message
 
 def rooms(request):
     rooms = Rooms.objects.all()
@@ -8,5 +8,5 @@ def rooms(request):
 
 def details(request, slug):
     room = Rooms.objects.get(slug=slug)
-
-    return render(request, 'room/details.html', {'room': room})
+    messages = Message.objects.filter(room=room)
+    return render(request, 'room/details.html', {'room': room, 'messages': messages})
